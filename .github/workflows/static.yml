@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Habit Calendar</title>
+  <style>
+    /* Basic styling */
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    .calendar-container {
+      margin: 20px auto;
+      max-width: 90%;
+      padding: 10px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    #calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+
+    .date-box {
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      font-size: 1.2em;
+    }
+
+    .date-box.crossed {
+      background-color: #ffcccc;
+    }
+
+    .date-box.crossed::after {
+      content: "X";
+      color: red;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      .calendar-container {
+        margin: 10px auto;
+        padding: 5px;
+      }
+      .date-box {
+        font-size: 1em;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .calendar-container {
+        margin: 5px auto;
+        padding: 2px;
+      }
+      .date-box {
+        font-size: 0.8em;
+      }
+    }
+
+    .month-header {
+      margin-bottom: 10px;
+    }
+
+    .month-header button {
+      margin: 0 5px;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .month-header button:hover {
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <div class="calendar-container">
+    <div class="month-header">
+      <button id="prev-month">Prev</button>
+      <span id="month-name"></span>
+      <button id="next-month">Next</button>
+    </div>
+    <div id="calendar"></div>
+  </div>
+
+  <script>
+    // Generate the calendar for the current month
+    const calendar = document.getElementById('calendar');
+    const monthNameElement = document.getElementById('month-name');
+    const prevMonthButton = document.getElementById('prev-month');
+    const nextMonthButton = document.getElementById('next-month');
+    let currentDate = new Date();
+    let year = currentDate.getFullYear();
+    let month = currentDate.getMonth();
+
+    function generateCalendar(year, month) {
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+      // Update month name
+      monthNameElement.textContent = `${monthNames[month]} ${year}`;
+
+      // Clear existing calendar
+      calendar.innerHTML = '';
+
+      // Add empty boxes for days before the first day of the month
+      for (let i = 0; i < firstDay; i++) {
+        const emptyBox = document.createElement('div');
+        emptyBox.className = 'date-box';
+        calendar.appendChild(emptyBox);
+      }
+
+      // Add date boxes
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateBox = document.createElement('div');
+        dateBox.className = 'date-box';
+        dateBox.textContent = day;
+
+        // Check if this date is already marked as completed
+        if (localStorage.getItem(`${year}-${month}-${day}`)) {
+          dateBox.classList.add('crossed');
+        }
+
+        // Add click event to toggle cross
+        dateBox.addEventListener('click', () => toggleCross(dateBox, year, month, day));
+        calendar.appendChild(dateBox);
+      }
+    }
+
+    // Toggle cross on a date box
+    function toggleCross(dateBox, year, month, day) {
+      const key = `${year}-${month}-${day}`;
+      
+      if (dateBox.classList.contains('crossed')) {
+        dateBox.classList.remove('crossed');
+        localStorage.removeItem(key);
+      } else {
+        dateBox.classList.add('crossed');
+        localStorage.setItem(key, true);
+      }
+    }
+
+    // Handle month navigation
+    prevMonthButton.addEventListener('click', () => {
+      if (month === 0) {
+        month = 11;
+        year--;
+      } else {
+        month--;
+      }
+      generateCalendar(year, month);
+    });
+
+    nextMonthButton.addEventListener('click', () => {
+      if (month === 11) {
+        month = 0;
+        year++;
+      } else {
+        month++;
+      }
+      generateCalendar(year, month);
+    });
+
+    // Initialize the calendar
+    generateCalendar(year, month);
+  </script>
+</body>
+</html>
